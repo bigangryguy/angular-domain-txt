@@ -1,0 +1,10 @@
+<h1 mat-dialog-title>Edit platform {{platform.nbr}}</h1>
+<div mat-dialog-content>
+  <mat-form-field>
+    <input matInput type="text" [(ngModel)]="platform.txt">
+  </mat-form-field>
+</div>
+<div mat-dialog-actions>
+  <button mat-raised-button color="primary" [mat-dialog-close]="platform">Update</button>
+  <button mat-raised-button color="warn" (click)="onCancel()">Cancel</button>
+</div>

@@ -1,40 +1,38 @@
-import {ViewChild, Component, OnInit, AfterViewInit} from '@angular/core';
+import {ViewChild, Component, AfterViewInit, Inject} from '@angular/core';
 import {MatPaginator} from '@angular/material/paginator';
 import {MatSort} from '@angular/material/sort';
 import {MatTableDataSource} from '@angular/material/table';
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog';
 import {DomainService} from '../domain.service';
 import {Domain} from '../domain';
-import {NgForm} from '@angular/forms';
-import * as _ from 'lodash';
 import {Platform} from '../platform';
-import { animate, state, style, transition, trigger } from '@angular/animations';
+import * as _ from 'lodash';
 
 @Component({
   selector: 'app-domain',
   templateUrl: './domain.component.html',
   styleUrls: ['./domain.component.css'],
-  animations: [
-    trigger('detailExpand', [
-      state('collapsed', style({height: '0px', minHeight: '0', display: 'none'})),
-      state('expanded', style({height: '*'})),
-      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-    ]),
-  ],
 })
 export class DomainComponent implements AfterViewInit {
-  @ViewChild('domainForm', { static: false }) domainForm: NgForm;
   domainData: Domain;
-  expandedDomain: Domain | null;
+
+  // Flags to control the expansion panels
+  firstPanelOpen = true;
+  secondPanelOpen = false;
 
   dataSource: MatTableDataSource<Domain> = new MatTableDataSource<Domain>();
-  displayedColumns: string[] = ['name', 'actions'];
+  displayedColumns: string[] = ['name', 'platforms', 'actions'];
+
+  minPlatformNumber = 1;
+  maxPlatformNumber = 5;
 
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
 
-  isEditMode = false;
-
-  constructor(private service: DomainService) {
+  constructor(
+    private service: DomainService,
+    public dialog: MatDialog,
+  ) {
     this.domainData = {} as Domain;
   }
 
@@ -64,13 +62,15 @@ export class DomainComponent implements AfterViewInit {
   updateDomain(): void {
     this.service.updateDomain(this.domainData).subscribe((response: any) => {
       this.getDomains();
-      this.cancelEdit();
+      this.firstPanelOpen = true;
+      this.secondPanelOpen = false;
     });
   }
 
   editDomain(domain): void {
     this.domainData = _.cloneDeep(domain);
-    this.isEditMode = true;
+    this.firstPanelOpen = false;
+    this.secondPanelOpen = true;
   }
 
   deleteDomain(id): void {
@@ -80,19 +80,45 @@ export class DomainComponent implements AfterViewInit {
   }
 
   cancelEdit(): void {
-    this.isEditMode = false;
-    this.domainForm.resetForm();
+    this.firstPanelOpen = true;
+    this.secondPanelOpen = false;
+    this.domainData = null;
   }
 
-  onSubmitDomain(): void {
-    if (this.domainForm.form.valid) {
-      if (this.isEditMode) {
-        this.updateDomain();
-      } else {
-        this.addDomain();
+  openDialog(index: number, platform: Platform): void {
+    const dialogRef = this.dialog.open(PlatformDialogComponent, {
+      width: '250px',
+      data: {
+        id: platform.id,
+        domain_id: platform.domain_id,
+        nbr: platform.nbr,
+        txt: platform.txt,
+        is_valid: platform.is_valid
       }
-    } else {
-      console.log('Enter valid data');
-    }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      const updatedPlatform: Platform = this.domainData.platforms[index];
+      updatedPlatform.txt = result.txt;
+      this.service.updatePlatform(updatedPlatform).subscribe((response: any) => {
+        this.getDomains();
+      });
+    });
+  }
+}
+
+@Component({
+  selector: 'app-platform-dialog',
+  templateUrl: 'platform-dialog.html',
+})
+export class PlatformDialogComponent {
+  constructor(
+    public dialogRef: MatDialogRef<PlatformDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public platform: Platform,
+  ) {
+  }
+
+  onCancel(): void {
+    this.dialogRef.close();
   }
 }

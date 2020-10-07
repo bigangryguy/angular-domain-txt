@@ -3,27 +3,6 @@ table {
   margin: auto;
 }
 
-tr.editable-row {
-  background-color: #ffe6aa;
-}
-
-tr.detail-row {
-  height: 0;
-}
-
-tr.domain-row:not(.expanded-row):hover {
-  background: whitesmoke;
-}
-
-tr.domain-row:not(.expanded-row):active {
-  background: #efefef;
-}
-
-.domain-row td {
-  border-bottom-width: 0;
-}
-
-.domain-detail {
-  overflow: hidden;
-  display: flex;
+.platform-list {
+  list-style: none;
 }

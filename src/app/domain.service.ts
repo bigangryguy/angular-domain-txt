@@ -3,12 +3,14 @@ import { Domain } from './domain';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import {Observable, of} from 'rxjs';
 import {catchError, retry} from 'rxjs/operators';
+import {Platform} from './platform';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DomainService {
   private domainsUrl = 'http://localhost:5000/domains';
+  private platformsUrl = 'http://localhost:5000/platforms';
   private httpOptions = {
     headers: new HttpHeaders({
       'Content-Type': 'application/json'
@@ -52,6 +54,15 @@ export class DomainService {
       .pipe(
         retry(2),
         catchError(this.handleError<Domain>('deleteDomain', null))
+      );
+  }
+
+  updatePlatform(platform): Observable<Platform> {
+    return this.http
+      .put<Platform>(this.platformsUrl, JSON.stringify(platform), this.httpOptions)
+      .pipe(
+        retry(2),
+        catchError(this.handleError<Platform>('updatePlatform', null))
       );
   }
 

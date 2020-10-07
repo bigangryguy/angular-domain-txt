@@ -18,13 +18,17 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatSelectModule } from '@angular/material/select';
+import { MatListModule } from '@angular/material/list';
+import { MatDialogModule } from '@angular/material/dialog';
 
 import { DomainComponent } from './domain/domain.component';
+import { PlatformDialogComponent } from './domain/domain.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    DomainComponent
+    DomainComponent,
+    PlatformDialogComponent,
   ],
   imports: [
     BrowserModule,
@@ -44,6 +48,8 @@ import { DomainComponent } from './domain/domain.component';
     MatExpansionModule,
     MatTabsModule,
     MatSelectModule,
+    MatListModule,
+    MatDialogModule,
   ],
   providers: [],
   bootstrap: [AppComponent]
