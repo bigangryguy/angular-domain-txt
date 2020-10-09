@@ -20,15 +20,20 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatSelectModule } from '@angular/material/select';
 import { MatListModule } from '@angular/material/list';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { DomainComponent } from './domain/domain.component';
-import { PlatformDialogComponent } from './domain/domain.component';
+import { DomainAddDialogComponent } from './domain/domain.component';
+import { PlatformUpdateDialogComponent } from './domain/domain.component';
+import { PlatformAddDialogComponent } from './domain/domain.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     DomainComponent,
-    PlatformDialogComponent,
+    DomainAddDialogComponent,
+    PlatformUpdateDialogComponent,
+    PlatformAddDialogComponent,
   ],
   imports: [
     BrowserModule,
@@ -50,6 +55,7 @@ import { PlatformDialogComponent } from './domain/domain.component';
     MatSelectModule,
     MatListModule,
     MatDialogModule,
+    MatTooltipModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

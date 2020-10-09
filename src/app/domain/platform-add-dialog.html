@@ -1,0 +1,41 @@
+<h1 mat-dialog-title>Add platform</h1>
+<div mat-dialog-content>
+  <form [formGroup]="addForm">
+    <mat-form-field>
+      <mat-label>Platform</mat-label>
+      <mat-select formControlName="nbr" [(ngModel)]="data.platform.nbr" required>
+        <mat-option *ngFor="let i of data.availableNbrs.available" [value]="i">
+          {{i}}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="addForm.get('nbr').errors?.required">
+        Platform number is required
+      </mat-error>
+      <mat-error *ngIf="!addForm.get('nbr').errors?.required &&
+      (addForm.get('nbr').errors?.min || addForm.get('nbr').errors?.max)">
+        Platform number must be from 1 through 5
+      </mat-error>
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>TXT record</mat-label>
+      <input matInput type="text"
+             matTooltip="{{data.schemaDesc}}" [matTooltipPosition]="'right'"
+             [(ngModel)]="data.platform.txt"
+             formControlName="txtRecord"
+             required>
+      <mat-error *ngIf="addForm.get('txtRecord').errors?.required">
+        TXT record is required
+      </mat-error>
+      <mat-error *ngIf="!addForm.get('txtRecord').errors?.required && addForm.get('txtRecord').errors?.pattern">
+        Enter a TXT record that matches the regular expression {{data.schemaRegex}}
+      </mat-error>
+    </mat-form-field>
+  </form>
+</div>
+<div mat-dialog-actions>
+  <button mat-raised-button color="primary" [mat-dialog-close]="data.platform"
+          [disabled]="!addForm.valid">
+    Add
+  </button>
+  <button mat-raised-button color="warn" (click)="onCancel()">Cancel</button>
+</div>

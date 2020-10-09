@@ -1,12 +1,14 @@
 import {ViewChild, Component, AfterViewInit, Inject} from '@angular/core';
 import {MatPaginator} from '@angular/material/paginator';
 import {MatSort} from '@angular/material/sort';
-import {MatTableDataSource} from '@angular/material/table';
+import {MatTable, MatTableDataSource} from '@angular/material/table';
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog';
 import {DomainService} from '../domain.service';
-import {Domain} from '../domain';
+import {AvailableNbr, Domain} from '../domain';
 import {Platform} from '../platform';
+import {Schema} from '../schema';
 import * as _ from 'lodash';
+import {Form, FormBuilder, FormGroup, Validators} from '@angular/forms';
 
 @Component({
   selector: 'app-domain',
@@ -15,6 +17,9 @@ import * as _ from 'lodash';
 })
 export class DomainComponent implements AfterViewInit {
   domainData: Domain;
+  platformData: Platform;
+  availablePlatformNbrs: AvailableNbr;
+  txtSchema: Schema;
 
   // Flags to control the expansion panels
   firstPanelOpen = true;
@@ -22,16 +27,19 @@ export class DomainComponent implements AfterViewInit {
 
   dataSource: MatTableDataSource<Domain> = new MatTableDataSource<Domain>();
   displayedColumns: string[] = ['name', 'platforms', 'actions'];
+  displayedColumnsPlatform: string[] = ['nbr', 'txt', 'actions'];
 
   minPlatformNumber = 1;
   maxPlatformNumber = 5;
 
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
+  @ViewChild('platformTable') platformTable: MatTable<Platform>;
 
   constructor(
-    private service: DomainService,
     public dialog: MatDialog,
+    private service: DomainService,
+    private formBuilder: FormBuilder,
   ) {
     this.domainData = {} as Domain;
   }
@@ -40,6 +48,14 @@ export class DomainComponent implements AfterViewInit {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
     this.getDomains();
+    this.getSchema();
+  }
+
+  getDomainData(id): void {
+    this.service.getDomain(id).subscribe((response: any) => {
+      console.log(response);
+      this.domainData = response;
+    });
   }
 
   getDomains(): void {
@@ -51,10 +67,7 @@ export class DomainComponent implements AfterViewInit {
 
   addDomain(): void {
     this.service.createDomain(this.domainData).subscribe((response: any) => {
-      this.dataSource.data.push({ ...response });
-      this.dataSource.data = this.dataSource.data.map(o => {
-        return o;
-      });
+      this.getDomains();
       this.cancelEdit();
     });
   }
@@ -68,7 +81,7 @@ export class DomainComponent implements AfterViewInit {
   }
 
   editDomain(domain): void {
-    this.domainData = _.cloneDeep(domain);
+    this.refreshDomainData(domain);
     this.firstPanelOpen = false;
     this.secondPanelOpen = true;
   }
@@ -79,21 +92,95 @@ export class DomainComponent implements AfterViewInit {
     });
   }
 
+  addPlatform(): void {
+    this.service.createPlatform(this.platformData).subscribe((response: any) => {
+      this.getDomains();
+      this.cancelEdit();
+    });
+  }
+
+  deletePlatform(id): void {
+    this.service.deletePlatform(id).subscribe((response: any) => {
+      this.getDomainData(this.domainData.id);
+    });
+  }
+
+  getSchema(): void {
+    this.service.getSchema().subscribe((response: any) => {
+      this.txtSchema = response;
+    });
+  }
+
   cancelEdit(): void {
     this.firstPanelOpen = true;
     this.secondPanelOpen = false;
     this.domainData = null;
   }
 
-  openDialog(index: number, platform: Platform): void {
-    const dialogRef = this.dialog.open(PlatformDialogComponent, {
+  refreshDomainData(domain): void {
+    this.domainData = _.cloneDeep(domain);
+  }
+
+  openAddDomainDialog(): void {
+    const dialogRef = this.dialog.open(DomainAddDialogComponent, {
       width: '250px',
       data: {
-        id: platform.id,
-        domain_id: platform.domain_id,
-        nbr: platform.nbr,
-        txt: platform.txt,
-        is_valid: platform.is_valid
+        id: 0,
+        name: '',
+        platforms: null,
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      const domain: Domain = result;
+      this.service.createDomain(domain).subscribe((response: any) => {
+        this.getDomains();
+      });
+    });
+  }
+
+  openAddPlatformDialog(domain: Domain): void {
+    this.service.getAvailablePlatformNbrs(domain.id).subscribe((response: AvailableNbr) => {
+      const emptyPlatform: Platform = {
+        id: 0,
+        domain_id: domain.id,
+        nbr: 0,
+        txt: '',
+        is_valid: true,
+      };
+      const dialogRef = this.dialog.open(PlatformAddDialogComponent, {
+        width: '250px',
+        data: {
+          platform: emptyPlatform,
+          availableNbrs: response,
+          schemaDesc: this.txtSchema.description,
+          schemaRegex: this.txtSchema.regex,
+        }
+      });
+
+      dialogRef.afterClosed().subscribe(result => {
+        const platform: Platform = result;
+        this.service.createPlatform(platform).subscribe((response2: any) => {
+          this.getDomainData(this.domainData.id);
+        });
+      });
+    });
+  }
+
+  openUpdateDialog(index: number, platform: Platform): void {
+    const tempPlatform: Platform = {
+      id: platform.id,
+      domain_id: platform.domain_id,
+      nbr: platform.nbr,
+      txt: platform.txt,
+      is_valid: platform.is_valid,
+    };
+    const dialogRef = this.dialog.open(PlatformUpdateDialogComponent, {
+      width: '250px',
+      data: {
+        currPlatform: tempPlatform,
+        schemaDesc: this.txtSchema.description,
+        schemaRegex: this.txtSchema.regex,
       }
     });
 
@@ -108,15 +195,63 @@ export class DomainComponent implements AfterViewInit {
 }
 
 @Component({
-  selector: 'app-platform-dialog',
-  templateUrl: 'platform-dialog.html',
+  selector: 'app-domain-add-dialog',
+  templateUrl: 'domain-add-dialog.html',
 })
-export class PlatformDialogComponent {
+export class DomainAddDialogComponent {
   constructor(
-    public dialogRef: MatDialogRef<PlatformDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public platform: Platform,
+    public dialogRef: MatDialogRef<DomainAddDialogComponent>,
+    private formBuilder: FormBuilder,
+    @Inject(MAT_DIALOG_DATA) public data,
   ) {
   }
+
+  addForm: FormGroup = this.formBuilder.group({
+    name: [, {validators: [Validators.required]}],
+  });
+
+  onCancel(): void {
+    this.dialogRef.close();
+  }
+}
+
+@Component({
+  selector: 'app-platform-add-dialog',
+  templateUrl: 'platform-add-dialog.html',
+})
+export class PlatformAddDialogComponent {
+  constructor(
+    public dialogRef: MatDialogRef<PlatformAddDialogComponent>,
+    private formBuilder: FormBuilder,
+    @Inject(MAT_DIALOG_DATA) public data,
+  ) {
+  }
+
+  addForm: FormGroup = this.formBuilder.group({
+    nbr: [, {validators: [Validators.required, Validators.min(1), Validators.max(5)], updateOn: 'change'}],
+    txtRecord: [, {validators: [Validators.required, Validators.pattern(this.data.schemaRegex)], updateOn: 'change'}]
+  });
+
+  onCancel(): void {
+    this.dialogRef.close();
+  }
+}
+
+@Component({
+  selector: 'app-platform-update-dialog',
+  templateUrl: 'platform-update-dialog.html',
+})
+export class PlatformUpdateDialogComponent {
+  constructor(
+    public dialogRef: MatDialogRef<PlatformUpdateDialogComponent>,
+    private formBuilder: FormBuilder,
+    @Inject(MAT_DIALOG_DATA) public data,
+  ) {
+  }
+
+  updateForm: FormGroup = this.formBuilder.group({
+    txtRecord: [, {validators: [Validators.required, Validators.pattern(this.data.schemaRegex)], updateOn: 'change'}]
+  });
 
   onCancel(): void {
     this.dialogRef.close();

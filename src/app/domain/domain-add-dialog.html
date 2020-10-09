@@ -1,0 +1,16 @@
+<h1 mat-dialog-title>Add domain</h1>
+<div mat-dialog-content>
+  <form [formGroup]="addForm">
+    <mat-form-field>
+      <mat-label>Name</mat-label>
+      <input matInput type="text" formControlName="name" [(ngModel)]="data.name" required>
+      <mat-error *ngIf="addForm.get('name').errors?.required">
+        Name is required
+      </mat-error>
+    </mat-form-field>
+  </form>
+</div>
+<div mat-dialog-actions>
+  <button mat-raised-button color="primary" [mat-dialog-close]="data" [disabled]="!addForm.valid">Add</button>
+  <button mat-raised-button color="warn" (click)="onCancel()">Cancel</button>
+</div>

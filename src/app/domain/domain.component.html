@@ -31,6 +31,9 @@
       <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
     </table>
 
+    <br>
+    <button mat-raised-button color="primary" (click)="openAddDomainDialog()">Add</button>
+
     <mat-paginator [pageSize]="5" [pageSizeOptions]="[5, 10, 25, 100]" showFirstLastButtons></mat-paginator>
   </mat-expansion-panel>
 
@@ -51,15 +54,34 @@
       </mat-tab>
 
       <mat-tab label="Platforms">
-        <mat-list *ngFor="let platform of domainData.platforms; let i = index">
-          <mat-list-item>
-            Platform {{platform.nbr}}: {{platform.txt}}
-          </mat-list-item>
-          <mat-list-item>
-            <button mat-raised-button (click)="openDialog(i, domainData.platforms[i])">Edit</button>
-          </mat-list-item>
-          <mat-divider></mat-divider>
-        </mat-list>
+        <table mat-table [dataSource]="domainData.platforms" #platformTable class="mat-elevation-z8">
+          <ng-container matColumnDef="nbr">
+            <th mat-header-cell *matHeaderCellDef>Platform</th>
+            <td mat-cell *matCellDef="let platform">{{platform.nbr}}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="txt">
+            <th mat-header-cell *matHeaderCellDef>TXT record</th>
+            <td mat-cell *matCellDef="let platform">{{platform.txt}}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let platform; let i = index">
+              <button mat-raised-button (click)="openUpdateDialog(i, platform)">Edit</button>
+              <button mat-raised-button color="warn" (click)="deletePlatform(platform.id)">Delete</button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumnsPlatform"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumnsPlatform;"></tr>
+        </table>
+        <br>
+        <button mat-raised-button color="primary"
+                [disabled]="domainData?.platforms?.length >= 5"
+                (click)="openAddPlatformDialog(domainData)">
+          Add
+        </button>
       </mat-tab>
     </mat-tab-group>
     <br>

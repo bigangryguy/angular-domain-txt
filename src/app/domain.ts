@@ -5,3 +5,7 @@ export interface Domain {
   name: string;
   platforms: Platform[];
 }
+
+export interface AvailableNbr {
+  available: number[];
+}
