@@ -27,7 +27,7 @@ export class DomainComponent implements AfterViewInit {
 
   dataSource: MatTableDataSource<Domain> = new MatTableDataSource<Domain>();
   displayedColumns: string[] = ['name', 'platforms', 'actions'];
-  displayedColumnsPlatform: string[] = ['nbr', 'txt', 'actions'];
+  displayedColumnsPlatform: string[] = ['nbr', 'txt', 'is_valid', 'actions'];
 
   minPlatformNumber = 1;
   maxPlatformNumber = 5;
@@ -188,7 +188,7 @@ export class DomainComponent implements AfterViewInit {
       const updatedPlatform: Platform = this.domainData.platforms[index];
       updatedPlatform.txt = result.txt;
       this.service.updatePlatform(updatedPlatform).subscribe((response: any) => {
-        this.getDomains();
+        this.getDomainData(platform.domain_id);
       });
     });
   }

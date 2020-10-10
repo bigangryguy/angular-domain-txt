@@ -43,16 +43,6 @@
     </mat-expansion-panel-header>
 
     <mat-tab-group>
-      <mat-tab label="Domain">
-        <mat-form-field>
-          <mat-label>Name</mat-label>
-          <input matInput type="text" [(ngModel)]="domainData.name">
-          <button matInput *ngIf="domainData.name" matSuffix mat-icon-button aria-label="Clear" (click)="domainData.name=''">
-            <mat-icon>close</mat-icon>
-          </button>
-        </mat-form-field>
-      </mat-tab>
-
       <mat-tab label="Platforms">
         <table mat-table [dataSource]="domainData.platforms" #platformTable class="mat-elevation-z8">
           <ng-container matColumnDef="nbr">
@@ -63,6 +53,14 @@
           <ng-container matColumnDef="txt">
             <th mat-header-cell *matHeaderCellDef>TXT record</th>
             <td mat-cell *matCellDef="let platform">{{platform.txt}}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="is_valid">
+            <th mat-header-cell *matHeaderCellDef>Valid</th>
+            <td mat-cell *matCellDef="let platform" [ngClass]="platform.is_valid ? 'platform-valid' : 'platform-invalid'">
+              <mat-icon aria-hidden="false" aria-label="Valid" *ngIf="platform.is_valid">done</mat-icon>
+              <mat-icon aria-hidden="false" aria-label="Invalid" *ngIf="!platform.is_valid">error</mat-icon>
+            </td>
           </ng-container>
 
           <ng-container matColumnDef="actions">
@@ -82,6 +80,16 @@
                 (click)="openAddPlatformDialog(domainData)">
           Add
         </button>
+      </mat-tab>
+
+      <mat-tab label="Domain">
+        <mat-form-field>
+          <mat-label>Name</mat-label>
+          <input matInput type="text" [(ngModel)]="domainData.name">
+          <button matInput *ngIf="domainData.name" matSuffix mat-icon-button aria-label="Clear" (click)="domainData.name=''">
+            <mat-icon>close</mat-icon>
+          </button>
+        </mat-form-field>
       </mat-tab>
     </mat-tab-group>
     <br>

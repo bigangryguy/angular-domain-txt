@@ -2,3 +2,11 @@ table {
   width: 100%;
   margin: auto;
 }
+
+.platform-valid {
+  color: green;
+}
+
+.platform-invalid {
+  color: red;
+}
