@@ -36,6 +36,9 @@ An Angular demonstration project for editing TXT records for fictitious domains 
 This is nothing more than a made up use case for learning Angular and is not intended for any real world use. However, 
 if you find anything useful in it for your own learning, that would make me happy.
 
+The frontend is part of an overall project with this [REST API](https://github.com/bigangryguy/flask-domain-txt) and both
+need to be running together to have a fully functional system.
+
 
 ### Built With
 
@@ -53,6 +56,9 @@ Linux or Unix-like system. I can verify this will work on macOS as well.
 
 You will need to install [Node.js](https://nodejs.org/en/) on your system. Instructions for that depend on your OS; go
 to the Node.js website for detailed instructions.
+
+The frontend expects to pull its data from this [REST API](https://github.com/bigangryguy/flask-domain-txt). That server will
+need to be running for the frontend to operate fully.
 
 ### Installation
 
